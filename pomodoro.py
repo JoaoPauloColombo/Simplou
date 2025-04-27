@@ -35,6 +35,12 @@ def save_to_history(duration):
     with open(HISTORY_FILE, "w") as f:
         json.dump(history, f, indent=4)
 
+# Função para excluir o histórico
+def delete_history(e=None):
+    if os.path.exists(HISTORY_FILE):
+        with open(HISTORY_FILE, "w") as f:
+            json.dump([], f)  # Esvaziando o conteúdo do arquivo
+
 def main(page: ft.Page):
     page.title = "Simplou Pomodoro"
     page.window_width = 400
@@ -91,7 +97,10 @@ def main(page: ft.Page):
                         ft.IconButton(icon=ft.Icons.BRIGHTNESS_6, on_click=toggle_theme)],
                         alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
                 ft.Column(history_list, scroll=ft.ScrollMode.AUTO, expand=True, alignment=ft.MainAxisAlignment.CENTER),  # Centralizando a coluna de histórico
-                ft.ElevatedButton("Voltar", on_click=show_home)
+                ft.Row([
+                    ft.ElevatedButton("Excluir Histórico", on_click=delete_history,width=150, height=50, bgcolor=ft.Colors.RED, color="white"),
+                    ft.ElevatedButton("Voltar", on_click=show_home, width=150, height=50, bgcolor=ft.Colors.BLUE, color="white")
+                ], alignment=ft.MainAxisAlignment.CENTER)
             ], expand=True, alignment=ft.MainAxisAlignment.START, horizontal_alignment=ft.CrossAxisAlignment.CENTER)  # Centralizando a tela
         )
         page.update()
@@ -179,6 +188,14 @@ def main(page: ft.Page):
             status_text.value = "Por favor, insira um número válido maior que zero."
         page.update()
 
+    # Definir tempos pré-definidos
+    def set_timer(duration_minutes):
+        nonlocal duration
+        duration = duration_minutes * 60
+        time_left.value = format_time(duration)
+        status_text.value = f"Pomodoro definido para {duration_minutes} minutos."
+        page.update()
+
     # Exibir a tela para configurar o tempo
     def show_set_timer_page(e):
         page.controls.clear()
@@ -186,12 +203,56 @@ def main(page: ft.Page):
             ft.Column([ 
                 ft.Row([ft.Text("Definir Tempo do Pomodoro", size=25, weight="bold")],
                        alignment=ft.MainAxisAlignment.CENTER),
+                ft.Container(
+                    content=ft.Text("Tempo personalizado:", size=16, weight="bold"),
+                    margin=ft.margin.only(top=20)
+                ),
                 custom_minutes,
                 ft.Row([ 
                     ft.ElevatedButton("Salvar", on_click=set_custom_time),
-                    ft.ElevatedButton("Voltar", on_click=show_home)
                 ], alignment=ft.MainAxisAlignment.CENTER),
-                status_text
+                # Botões para tempos predefinidos com texto em cima de cada botão
+                ft.Column(
+                    [
+                        ft.Container(
+                            content=ft.Column(
+                                [
+                                    ft.Text("Padrão para foco", size=14, weight="bold"),
+                                    ft.ElevatedButton("25 Min", on_click=lambda e: set_timer(25)),
+                                ], 
+                                alignment=ft.MainAxisAlignment.CENTER,
+                                horizontal_alignment=ft.CrossAxisAlignment.CENTER
+                            ),
+                            margin=ft.margin.only(top=10)
+                        ),
+                        ft.Container(
+                            content=ft.Column(
+                                [
+                                    ft.Text("Sessões de estudo e trabalho", size=14, weight="bold"),
+                                    ft.ElevatedButton("50 Min", on_click=lambda e: set_timer(50)),
+                                ],
+                                alignment=ft.MainAxisAlignment.CENTER,
+                                horizontal_alignment=ft.CrossAxisAlignment.CENTER
+                            ),
+                            margin=ft.margin.only(top=10)
+                        ),
+                        ft.Container(
+                            content=ft.Column(
+                                [
+                                    ft.Text("Pausas mais curtas", size=14, weight="bold"),
+                                    ft.ElevatedButton("15 Min", on_click=lambda e: set_timer(15)),
+                                ],
+                                alignment=ft.MainAxisAlignment.CENTER,
+                                horizontal_alignment=ft.CrossAxisAlignment.CENTER
+                            ),
+                            margin=ft.margin.only(top=10)
+                        ),
+                    ], 
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER
+                ),
+                status_text,
+                ft.ElevatedButton("Voltar", on_click=show_home, width=150, height=50, bgcolor=ft.Colors.BLUE, color="white")
             ], 
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -211,9 +272,9 @@ def main(page: ft.Page):
                 ft.ElevatedButton("Iniciar", on_click=start_timer),
                 ft.ElevatedButton("Pausar", on_click=pause_timer),
                 ft.ElevatedButton("Resetar", on_click=reset_timer),
-                ft.ElevatedButton("Configurar Tempo", on_click=show_set_timer_page),
+                ft.ElevatedButton("Configurar Tempo", on_click=show_set_timer_page,),
             ], alignment=ft.MainAxisAlignment.CENTER),
-            ft.ElevatedButton("Finalizar ciclo", on_click=finish_cycle, bgcolor=ft.Colors.RED, color="white"),
+            ft.ElevatedButton("Finalizar ciclo",width=150, height=50, on_click=finish_cycle, bgcolor=ft.Colors.RED, color="white"),
             status_text
         ],
         alignment=ft.MainAxisAlignment.CENTER,
@@ -223,5 +284,4 @@ def main(page: ft.Page):
 
     page.add(main_view)
 
-# Executar o aplicativo
-ft.app(target=main)
+    
