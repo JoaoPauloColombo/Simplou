@@ -9,12 +9,19 @@ import pygame  # Para sons
 HISTORY_FILE = "db/history.json"
 
 # Inicializar o pygame mixer para tocar sons
-pygame.mixer.init()
+try:
+    pygame.mixer.init()
+    SOUND_AVAILABLE = True
+except pygame.error as e:
+    print(f"[Aviso] Erro ao iniciar áudio: {e}")
+    SOUND_AVAILABLE = False
 
 # Função para tocar som
 def play_sound(sound_file):
-    pygame.mixer.music.load(sound_file)
-    pygame.mixer.music.play()
+    if SOUND_AVAILABLE:
+        pygame.mixer.music.load(sound_file)
+        pygame.mixer.music.play()
+
 
 def load_history():
     if not os.path.exists("db"):
